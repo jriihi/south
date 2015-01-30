@@ -71,16 +71,16 @@ class DatabaseOperations(generic.DatabaseOperations):
         "Find the indexes that apply to a column, needed when deleting"
 
         sql = """
-        SELECT si.name, si.id, sik.colid, sc.name
-        FROM dbo.sysindexes si WITH (NOLOCK)
-        INNER JOIN dbo.sysindexkeys sik WITH (NOLOCK)
-            ON  sik.id = si.id
-            AND sik.indid = si.indid
-        INNER JOIN dbo.syscolumns sc WITH (NOLOCK)
-            ON  si.id = sc.id
-            AND sik.colid = sc.colid
-        WHERE si.indid !=0
-            AND si.id = OBJECT_ID('%s')
+        SELECT si.name, si.object_id, sik.column_id, sc.name
+        FROM sys.indexes si WITH (NOLOCK)
+        INNER JOIN sys.index_columns sik WITH (NOLOCK)
+            ON  sik.object_id = si.object_id
+            AND sik.index_id = si.index_id
+        INNER JOIN sys.columns sc WITH (NOLOCK)
+            ON  si.object_id = sc.object_id
+            AND sik.column_id = sc.column_id
+        WHERE si.index_id !=0
+            AND si.object_id = OBJECT_ID('%s')
             AND sc.name = '%s'
         """
         idx = self.execute(sql % (table_name, name), [])
@@ -278,7 +278,7 @@ class DatabaseOperations(generic.DatabaseOperations):
 
         sql = """
         SELECT object_name(cdefault)
-        FROM syscolumns
+        FROM sys.syscolumns
         WHERE id = object_id('%s')
         AND name = '%s'
         """
